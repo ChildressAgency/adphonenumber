@@ -76,7 +76,7 @@ if(!class_exists('Ad_Phone_Number')){
         setcookie('apn_ad_phone', $ad_phone, time() + (86400 * 30), COOKIEPATH, COOKIE_DOMAIN);
       }
 
-      $this->phone_number = get_phone_number();
+      $this->phone_number = $this->get_phone_number();
     }
 
     public function get_phone_number_link($atts){
@@ -84,7 +84,7 @@ if(!class_exists('Ad_Phone_Number')){
         'class' => '',
       ), $atts, 'apn_phone_number_link');
 
-      $link = '<a href="tel:' . esc_url($this->phone) . '" class="' . $atts['class'] . '">' . esc_html($this->phone) . '</a>';
+      $link = '<a href="tel:' . esc_url($this->phone_number) . '" class="' . $atts['class'] . '">' . esc_html($this->phone_number) . '</a>';
 
       return $link;
     }
