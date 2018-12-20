@@ -1,7 +1,7 @@
 <?php
 /*
   Plugin Name: Advertisement Phone Number
-  Description: Allows you to set a specific phone number for an advertisement landing page. The phone number will replace all default phone numbers that use the href="tel:" attribute. Requires ACF plugin.
+  Description: Allows you to set a specific phone number for an advertisement landing page. The phone number will replace all default phone numbers that use the href="tel:" attribute.
   Author: The Childress Agency
   Author URI: https://childressagency.com
   Version: 1.0
