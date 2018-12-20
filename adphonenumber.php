@@ -19,11 +19,12 @@ require_once APN_PLUGIN_DIR . '/includes/class-apn_options_page.php';
 if(!class_exists('Ad_Phone_Number')){
 
   class Ad_Phone_Number{
-    private $phone;
-    
+    private $phone_number;
+
     public function __construct(){
       add_action('init', array($this, 'load_textdomain'));
       add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+      add_action('wp', array($this, 'set_adphone_cookie'), 10);
 
       add_action('add_meta_boxes', array('APN_Meta_Box', 'add'));
       add_action('save_post', array('APN_Meta_Box', 'save'));
@@ -31,6 +32,8 @@ if(!class_exists('Ad_Phone_Number')){
       if(is_admin()){
         $apn_options_page = new APN_Options_Page();
       }
+
+      add_shortcode('apn_phone_number_link', array($this, 'get_phone_number_link'));
     }
 
     public function load_textdomain(){
@@ -49,8 +52,41 @@ if(!class_exists('Ad_Phone_Number')){
       wp_localize_script('apn-script', 'adPhone', $this->phone);
     }
 
-    public function get_ad_phone_number(){
-      
+    public function get_phone_number(){
+      if(isset($_COOKIE['apn_ad_phone'])){
+        $phone = $_COOKIE['apn_ad_phone'];
+      }
+      elseif(is_page_template('template-landingpage.php')){
+        $phone = get_post_meta(get_the_ID(), 'alternate_phone_number', true);
+      }
+      else{
+        $phone = get_option('default_phone_number');
+      }
+
+      return $phone;
+    }
+
+    public function set_adphone_cookie(){
+      if(is_page_template('template-landingpage.php')){
+        global $wp_query;
+        $ad_phone = get_post_meta($wp_query->post->ID, 'alternate_phone_number', true);
+
+        // 86400 = 1 day
+        //$num_days = get_option('cookie_lifespan');
+        setcookie('apn_ad_phone', $ad_phone, time() + (86400 * 30), COOKIEPATH, COOKIE_DOMAIN);
+      }
+
+      $this->phone_number = get_phone_number();
+    }
+
+    public function get_phone_number_link($atts){
+      $atts = shortcode_atts(array(
+        'class' => '',
+      ), $atts, 'apn_phone_number_link');
+
+      $link = '<a href="tel:' . esc_url($this->phone) . '" class="' . $atts['class'] . '">' . esc_html($this->phone) . '</a>';
+
+      return $link;
     }
   }
 
