@@ -47,7 +47,7 @@ if(!class_exists('Ad_Phone_Number')){
     }
 
     public function load_textdomain(){
-      load_plugin_textdomain('Ad_Phone_Number', false, basename(dirname(__FILE__)) . '/languages');
+      load_plugin_textdomain('ad_phone_number', false, basename(dirname(__FILE__)) . '/languages');
     }
 
     public function enqueue_scripts(){

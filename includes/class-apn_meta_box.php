@@ -12,7 +12,7 @@ if(!class_exists('APN_Meta_Box')){
     public static function add(){
       add_meta_box(
         'apn_ad_phone_number_meta_box',
-        'Advertisement Phone Number',
+        __('Advertisement Phone Number', 'ad_phone_number'),
         [self::class, 'html']
       );
     }
@@ -63,8 +63,8 @@ if(!class_exists('APN_Meta_Box')){
 
       wp_nonce_field(basename(__FILE__), 'apn_ad_phone_number_nonce');
 
-      echo '<p><input type="checkbox" name="apn_landing_page"'. checked($is_landing_page, '1', false) . ' />Is this an Advertisement Landing Page?</p>';
-      echo '<p><label for="apn_ad_phone_number">Alternate Phone Number</label><br />';
+      echo '<p><input type="checkbox" name="apn_landing_page"'. checked($is_landing_page, '1', false) . ' />' . __('Is this an Advertisement Landing Page?', 'ad_phone_number') . '</p>';
+      echo '<p><label for="apn_ad_phone_number">' . __('Alternate Phone Number', 'ad_phone_number') . '</label><br />';
       echo '<input type="text" name="apn_ad_phone_number" id="apn_ad_phone_number" class="regular-text" value="' . esc_html($phone_number) . '" />';
       echo '</p>';
     }
