@@ -31,13 +31,13 @@ if(!class_exists('Ad_Phone_Number')){
       add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
 
       if(!is_admin()){
-        add_action('wp', array($this, 'set_adphone_cookie'), 10);
+        add_action('wp', array($this, 'set_adphone_cookie'), 10);        
       }
 
-      add_action('add_meta_boxes', array('APN_Meta_Box', 'add'));
-      add_action('save_post', array('APN_Meta_Box', 'save'));
-
       if(is_admin()){
+        add_action('load-post.php', array('APN_Meta_Box', 'init'));
+        add_action('load-post-new.php', array('APM_Meta_Box', 'init'));
+
         $apn_options_page = new APN_Options_Page();
       }
 
@@ -69,9 +69,8 @@ if(!class_exists('Ad_Phone_Number')){
       if(isset($_COOKIE['apn_ad_phone'])){
         $phone = $_COOKIE['apn_ad_phone'];
       }
-      //elseif(is_page_template('template-landingpage.php')){
-      elseif(get_page_template_slug($wp_query->post->ID) == 'template-landingpage.php'){
-        $phone = get_post_meta(get_the_ID(), 'apn_ad_phone_number', true);
+      elseif((get_post_meta($wp_query->post->ID, 'apn_landing_page', true) == 1) && (get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true) != '')){
+        $phone = get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true);
       }
       else{
         $phone = get_option('default_phone_number');
@@ -82,7 +81,7 @@ if(!class_exists('Ad_Phone_Number')){
 
     public function set_adphone_cookie(){
       global $wp_query;
-      if(get_page_template_slug($wp_query->post->ID) == 'template-landingpage.php'){
+      if((get_post_meta($wp_query->post->ID, 'apn_landing_page', true) == 1) && (get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true) != '')){
         $ad_phone = get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true);
 
         // 86400 = 1 day

@@ -67,10 +67,6 @@ if(!class_exists('APN_Options_Page')){
     }
 
     public function sanitize($input){
-      //$new_input = array();
-      //if(isset($input['default_phone_number'])){
-      //  $new_input['default_phone_number'] = sanitize_text_field($input['default_phone_number']);
-      //}
       $new_input = sanitize_text_field($input);
 
       return $new_input;
