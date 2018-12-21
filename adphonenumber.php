@@ -1,18 +1,23 @@
 <?php
 /*
   Plugin Name: Advertisement Phone Number
-  Description: Allows you to set a specific phone number for an advertisement landing page. The phone number will replace all default phone numbers that use the href="tel:" attribute.
+  Description: Allows you to set a specific phone number for an advertisement landing page. The phone number will replace all default phone numbers that use the href="tel:" attribute for the rest of their visit and until cookie expires. The advertisement landing page requires using a page template called template-landingpage.php
   Author: The Childress Agency
   Author URI: https://childressagency.com
   Version: 1.0
   Text Domain: adphonenumber
 */
 
-if(!defined('ABSPATH')){ exit; }
+if(!defined('ABSPATH')){ exit; } // can't access file directly
 
+// define plugin paths
 define('APN_PLUGIN_DIR', dirname(__FILE__));
 define('APN_PLUGIN_URL', plugin_dir_url(__FILE__));
 
+/*
+  Include classes to add "Alternate Phone Number" meta box
+  and options page for setting default phone number.
+*/
 require_once APN_PLUGIN_DIR . '/includes/class-apn_meta_box.php';
 require_once APN_PLUGIN_DIR . '/includes/class-apn_options_page.php';
 
@@ -20,7 +25,6 @@ if(!class_exists('Ad_Phone_Number')){
 
   class Ad_Phone_Number{
     private $phone_number;
-
 
     public function __construct(){
       add_action('init', array($this, 'load_textdomain'));
