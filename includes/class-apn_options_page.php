@@ -12,24 +12,15 @@ if(!class_exists('APN_Options_Page')){
     }
 
     public function add_plugin_page(){
-      /*add_options_page(
-        'Default Phone Number',
-        'Phone Number',
-        'manage_options',
-        'default-phone-number',
-        array($this, 'create_admin_page')
-      );*/
-
       add_menu_page(
         'Ad Phone Number',
         'Ad Phone Number',
         'manage_options',
-        'default-phone-number',
+        'apn-settings',
         array($this, 'create_admin_page'),
         'dashicons-phone',
         81
       );
-
     }
 
     public function create_admin_page(){
@@ -40,7 +31,7 @@ if(!class_exists('APN_Options_Page')){
         <form method="post" action="options.php">
           <?php
             settings_fields('default-phone-number-group');
-            do_settings_sections('default-phone-number');
+            do_settings_sections('apn-settings');
             submit_button();
           ?>
         </form>
@@ -63,14 +54,14 @@ if(!class_exists('APN_Options_Page')){
         'default_phone_number_section_id',
         '',
         array($this, 'print_section_info'),
-        'default-phone-number'
+        'apn-settings'
       );
 
       add_settings_field(
         'default_phone_number',
         'Default Phone Number',
         array($this, 'default_phone_number_callback'),
-        'default-phone-number',
+        'apn-settings',
         'default_phone_number_section_id'
       );
     }
