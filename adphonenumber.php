@@ -38,6 +38,8 @@ if(!class_exists('Ad_Phone_Number')){
       }
 
       add_shortcode('apn_phone_number_link', array($this, 'get_phone_number_link'));
+
+      add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this, 'add_settings_link'));
     }
 
     public function load_textdomain(){
@@ -91,9 +93,20 @@ if(!class_exists('Ad_Phone_Number')){
         'class' => '',
       ), $atts, 'apn_phone_number_link');
 
-      $link = '<a href="tel:' . esc_url($this->phone_number) . '" class="' . $atts['class'] . '">' . esc_html($this->phone_number) . '</a>';
+      $class = '';
+      if($atts['class'] != ''){
+        $class = sprintf(' class="%s"', esc_attr($atts['class']));
+      }
+
+      $link = '<a href="tel:' . esc_url($this->phone_number) . '"' . $class . '>' . esc_html($this->phone_number) . '</a>';
 
       return $link;
+    }
+
+    public function add_settings_link($links){
+      $links[] = '<a href="' . esc_url(get_admin_url(null, 'admin.php?page=apn-settings')) . '">Settings</a>';
+
+      return $links;
     }
   }
 
