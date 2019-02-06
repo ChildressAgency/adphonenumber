@@ -5,7 +5,7 @@
   Author: The Childress Agency
   Author URI: https://childressagency.com
   Version: 1.0
-  Text Domain: adphonenumber
+  Text Domain: ad_phone_number
 */
 
 if(!defined('ABSPATH')){ exit; } // can't access file directly
@@ -36,7 +36,7 @@ if(!class_exists('Ad_Phone_Number')){
 
       if(is_admin()){
         add_action('load-post.php', array('APN_Meta_Box', 'init'));
-        add_action('load-post-new.php', array('APM_Meta_Box', 'init'));
+        add_action('load-post-new.php', array('APN_Meta_Box', 'init'));
 
         $apn_options_page = new APN_Options_Page();
       }
@@ -107,7 +107,7 @@ if(!class_exists('Ad_Phone_Number')){
     }
 
     public function add_settings_link($links){
-      $links[] = '<a href="' . esc_url(get_admin_url(null, 'admin.php?page=apn-settings')) . '">Settings</a>';
+      $links[] = '<a href="' . esc_url(get_admin_url(null, 'admin.php?page=apn-settings')) . '">' . esc_html__('Settings', 'ad_phone_number') . '</a>';
 
       return $links;
     }
