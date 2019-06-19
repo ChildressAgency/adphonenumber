@@ -30,6 +30,8 @@ if(!class_exists('Ad_Phone_Number')){
       add_action('init', array($this, 'load_textdomain'));
       add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
 
+      $this->phone_number = $this->get_phone_number();
+
       if(!is_admin()){
         add_action('wp', array($this, 'set_adphone_cookie'), 10);        
       }
@@ -51,7 +53,6 @@ if(!class_exists('Ad_Phone_Number')){
     }
 
     public function enqueue_scripts(){
-      $this->phone_number = $this->get_phone_number();
       wp_enqueue_script(
         'apn-script',
         APN_PLUGIN_URL . 'js/apn-script.js',
@@ -69,6 +70,9 @@ if(!class_exists('Ad_Phone_Number')){
       if(isset($_COOKIE['apn_ad_phone'])){
         $phone = $_COOKIE['apn_ad_phone'];
       }
+      elseif($this->use_url_parameter()){
+        $phone = get_option('ad_phone_number_url');
+      }
       elseif((get_post_meta($wp_query->post->ID, 'apn_landing_page', true) == 1) && (get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true) != '')){
         $phone = get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true);
       }
@@ -79,16 +83,27 @@ if(!class_exists('Ad_Phone_Number')){
       return $phone;
     }
 
+    private function use_url_parameter(){
+      if(get_option('use_url_parameter') == 1){
+        $url_parameter = get_option('url_parameter');
+        $url_parameter_value = get_option('url_parameter_value');
+        if(isset($_GET[$url_parameter]) && $_GET[$url_parameter] == $url_parameter_value){
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     public function set_adphone_cookie(){
       global $wp_query;
-      if((get_post_meta($wp_query->post->ID, 'apn_landing_page', true) == 1) && (get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true) != '')){
-        $ad_phone = get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true);
+      //if((get_post_meta($wp_query->post->ID, 'apn_landing_page', true) == 1) && (get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true) != '')){
+       // $ad_phone = get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true);
 
         // 86400 = 1 day
         //$num_days = get_option('cookie_lifespan');
-        setcookie('apn_ad_phone', $ad_phone, time() + (86400 * 30), COOKIEPATH, COOKIE_DOMAIN);
-      }
-
+        setcookie('apn_ad_phone', $this->phone_number, time() + (86400 * 30), COOKIEPATH, COOKIE_DOMAIN);
+      //}
     }
 
     public function get_phone_number_link($atts){
