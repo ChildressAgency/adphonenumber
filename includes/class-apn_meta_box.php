@@ -5,15 +5,15 @@ if(!defined('ABSPATH')){ exit; }
 if(!class_exists('APN_Meta_Box')){
   abstract class APN_Meta_Box{
     public static function init(){
-      add_action('add_meta_boxes_page', array(self::class, 'add'));
-      add_action('save_post', array(self::class, 'save'));
+      add_action('add_meta_boxes_page', array($this, 'add'));
+      add_action('save_post', array($this, 'save'));
     }
 
     public static function add(){
       add_meta_box(
         'apn_ad_phone_number_meta_box',
         esc_html__('Advertisement Phone Number', 'ad_phone_number'),
-        [self::class, 'html']
+        [$this, 'html']
       );
     }
 
