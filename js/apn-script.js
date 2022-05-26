@@ -1,7 +1,9 @@
-jQuery(document).ready(function($){
-  if(adPhone != ''){
+jQuery(function($){
+  if(adPhone !== ''){
     $('a[href^="tel:"]').each(function(){
-      $(this).text(adPhone).attr('href', 'tel:' + adPhone);
+      if(!$(this).hasClass('emergency-phone')){
+        $(this).text(adPhone).attr('href', 'tel:' + adPhone);
+      }
     });
   }
 });
