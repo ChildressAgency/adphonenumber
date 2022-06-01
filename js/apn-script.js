@@ -1,7 +1,9 @@
 jQuery(document).ready(function($){
-  if(adPhone != ''){
+  if(adPhone.phone_number !== ''){
     $('a[href^="tel:"]').each(function(){
-      $(this).text(adPhone).attr('href', 'tel:' + adPhone);
+      if(!$(this).hasClass('emergency-phone')){
+        $(this).text(adPhone.phone_number).attr('href', 'tel:' + adPhone.phone_number);
+      }
     });
   }
 });

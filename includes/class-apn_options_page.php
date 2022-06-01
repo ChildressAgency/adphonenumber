@@ -10,8 +10,10 @@ if(!class_exists('APN_Options_Page')){
       $this->options['default_phone_number'] = get_option('default_phone_number');
       $this->options['use_url_parameter'] = get_option('use_url_parameter');
       $this->options['url_parameter'] = get_option('url_parameter');
-      $this->options['url_parameter_value'] = get_option('url_parameter_value');
-      $this->options['ad_phone_number_url'] = get_option('ad_phone_number_url');
+      $this->options['url_parameter_value_1'] = get_option('url_parameter_value_1');
+      $this->options['url_parameter_value_2'] = get_option('url_parameter_value_2');
+      $this->options['ad_phone_number_url_1'] = get_option('ad_phone_number_url_1');
+      $this->options['ad_phone_number_url_2'] = get_option('ad_phone_number_url_2');
       $this->options['cookie_lifespan'] = get_option('cookie_lifespan');
       
       add_action('admin_menu', array($this, 'add_plugin_page'));
@@ -103,30 +105,58 @@ if(!class_exists('APN_Options_Page')){
         'apn_settings_section'
       );
 
-      //url parameter value
+      //url parameter value 1
       register_setting(
         'apn_settings_section',
-        'url_parameter_value',
+        'url_parameter_value_1',
         array($this, 'sanitize')
       );
       add_settings_field(
-        'url_parameter_value',
-        esc_html__('Enter the value of URL Parameter to look for.', 'ad_phone_number'),
-        array($this, 'url_parameter_value_callback'),
+        'url_parameter_value_1',
+        esc_html__('Enter the first value of URL Parameter to look for.', 'ad_phone_number'),
+        array($this, 'url_parameter_value_1_callback'),
         'apn-settings',
         'apn_settings_section'
       );
 
-      //ad phone number when using url parameter
+      //ad phone number 1 when using url parameter
       register_setting(
         'apn_settings_section',
-        'ad_phone_number_url',
+        'ad_phone_number_url_1',
         array($this, 'sanitize')
       );
       add_settings_field(
-        'ad_phone_number_url',
-        esc_html__('Enter the advertising phone number.', 'ad_phone_number'),
-        array($this, 'ad_phone_number_url_callback'),
+        'ad_phone_number_url_1',
+        esc_html__('Enter the advertisment phone number for URL parameter value 1.', 'ad_phone_number'),
+        array($this, 'ad_phone_number_url_1_callback'),
+        'apn-settings',
+        'apn_settings_section'
+      );
+
+      //url parameter value 2
+      register_setting(
+        'apn_settings_section',
+        'url_parameter_value_2',
+        array($this, 'sanitize')
+      );
+      add_settings_field(
+        'url_parameter_value_2',
+        esc_html__('Enter the second value of URL Parameter to look for.', 'ad_phone_number'),
+        array($this, 'url_parameter_value_2_callback'),
+        'apn-settings',
+        'apn_settings_section'
+      );
+
+      //ad phone number 2 when using url parameter
+      register_setting(
+        'apn_settings_section',
+        'ad_phone_number_url_2',
+        array($this, 'sanitize')
+      );
+      add_settings_field(
+        'ad_phone_number_url_2',
+        esc_html__('Enter the advertisment phone number for URL parameter value 2.', 'ad_phone_number'),
+        array($this, 'ad_phone_number_url_2_callback'),
         'apn-settings',
         'apn_settings_section'
       );
@@ -173,21 +203,35 @@ if(!class_exists('APN_Options_Page')){
     public function url_parameter_callback(){
       printf(
         '<input type="text" id="url_parameter" name="url_parameter" value="%s" />',
-        isset($this->options['url_parameter']) ? esc_attr($this->options['url_parameter']): ''
+        isset($this->options['url_parameter']) ? esc_attr($this->options['url_parameter']) : ''
       );
     }
 
-    public function url_parameter_value_callback(){
+    public function url_parameter_value_1_callback(){
       printf(
-        '<input type="text" id="url_parameter_value" name="url_parameter_value" value="%s" />',
-        isset($this->options['url_parameter_value']) ? esc_attr($this->options['url_parameter_value']): ''
+        '<input type="text" id="url_parameter_value_1" name="url_parameter_value_1" value="%s" />',
+        isset($this->options['url_parameter_value_1']) ? esc_attr($this->options['url_parameter_value_1']) : ''
       );
     }
 
-    public function ad_phone_number_url_callback(){
+    public function url_parameter_value_2_callback(){
       printf(
-        '<input type="text" id="ad_phone_number_url" name="ad_phone_number_url" value="%s" />',
-        isset($this->options['ad_phone_number_url']) ? esc_attr($this->options['ad_phone_number_url']) : ''
+        '<input type="text" id="url_parameter_value_2" name="url_parameter_value_2" value="%s" />',
+        isset($this->options['url_parameter_value_2']) ? esc_attr($this->options['url_parameter_value_2']) : ''
+      );
+    }
+
+    public function ad_phone_number_url_1_callback(){
+      printf(
+        '<input type="text" id="ad_phone_number_url_1" name="ad_phone_number_url_1" value="%s" />',
+        isset($this->options['ad_phone_number_url_1']) ? esc_attr($this->options['ad_phone_number_url_1']) : ''
+      );
+    }
+
+    public function ad_phone_number_url_2_callback(){
+      printf(
+        '<input type="text" id="ad_phone_number_url_2" name="ad_phone_number_url_2" value="%s" />',
+        isset($this->options['ad_phone_number_url_2']) ? esc_attr($this->options['ad_phone_number_url_2']) : ''
       );
     }
 

@@ -5,21 +5,23 @@ if(!defined('ABSPATH')){ exit; }
 if(!class_exists('APN_Meta_Box')){
   abstract class APN_Meta_Box{
     public static function init(){
-      add_action('add_meta_boxes_page', array($this, 'add'));
-      add_action('save_post', array($this, 'save'));
+      add_action('add_meta_boxes_page', array(self::class, 'add'));
+      add_action('save_post', array(self::class, 'save'));
     }
 
     public static function add(){
       add_meta_box(
         'apn_ad_phone_number_meta_box',
         esc_html__('Advertisement Phone Number', 'ad_phone_number'),
-        [$this, 'html']
+        [self::class, 'html']
       );
     }
 
     public static function save($post_id){
-      if(!wp_verify_nonce($_POST['apn_ad_phone_number_nonce'], basename(__FILE__))){
-        return $post_id;
+      if(isset($_POST['apn_ad_phone_number_nonce'])){
+        if(!wp_verify_nonce($_POST['apn_ad_phone_number_nonce'], basename(__FILE__))){
+          return $post_id;
+        }
       }
 
       if(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE){
@@ -36,7 +38,10 @@ if(!class_exists('APN_Meta_Box')){
       }
 
       $old_is_landing_page = get_post_meta($post_id, 'apn_landing_page', true);
-      $new_is_landing_page = $_POST['apn_landing_page'];
+      
+      if(isset($_POST['apn_landing_page'])){
+          $new_is_landing_page = $_POST['apn_landing_page'];
+      }
 
       if(isset($new_is_landing_page) && $new_is_landing_page !== $old_is_landing_page){
         update_post_meta($post_id, 'apn_landing_page', '1');
@@ -46,9 +51,12 @@ if(!class_exists('APN_Meta_Box')){
       }
 
       $old_phone_number = get_post_meta($post_id, 'apn_ad_phone_number', true);
-      $new_phone_number = sanitize_text_field($_POST['apn_ad_phone_number']);
+      
+      if(isset($_POST['apn_ad_phone_number'])){
+          $new_phone_number = sanitize_text_field($_POST['apn_ad_phone_number']);
+      }
 
-      if($new_phone_number && $new_phone_number !== $old_phone_number){
+      if(isset($new_phone_number) && $new_phone_number !== $old_phone_number){
         update_post_meta($post_id, 'apn_ad_phone_number', $new_phone_number);
       }
       elseif($old_phone_number && $new_phone_number === ''){
