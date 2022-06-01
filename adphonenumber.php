@@ -4,7 +4,7 @@
   Description: Allows you to set a specific phone number for an advertisement landing page. The phone number will replace all default phone numbers that use the href="tel:" attribute for the rest of their visit and until cookie expires. The advertisement landing page requires using a page template called template-landingpage.php
   Author: The Childress Agency
   Author URI: https://childressagency.com
-  Version: 1.0
+  Version: 2.0
   Text Domain: ad_phone_number
 */
 
@@ -33,9 +33,9 @@ if(!class_exists('Ad_Phone_Number')){
 
       //$this->phone_number = $this->get_phone_number();
 
-      if(!is_admin()){
-        add_action('wp', array($this, 'set_adphone_cookie'), 10);        
-      }
+      //if(!is_admin()){
+      //  add_action('wp', array($this, 'set_adphone_cookie'), 10);        
+      //}
 
       if(is_admin()){
         add_action('load-post.php', array('APN_Meta_Box', 'init'));
@@ -62,35 +62,68 @@ if(!class_exists('Ad_Phone_Number')){
         true
       );
 
-      wp_localize_script('apn-script', 'adPhone', $this->phone_number);
+      wp_localize_script(
+        'apn-script', 
+        'adPhone', 
+        array(
+          'phone_number' => $this->phone_number
+        )
+      );
     }
 
     public function get_phone_number(){
       //global $wp_query;
       //$page_id = $wp_query->post->ID;
 
-      if($this->use_url_parameter()){
-        $phone = get_option('ad_phone_number_url');
+      $url_parameter_phone = $this->get_url_parameter();
+
+      //if($this->use_url_parameter()){
+      if($url_parameter_phone !== false){
+        //$phone = get_option('ad_phone_number_url');
+        $this->phone_number = $url_parameter_phone;
+
+        $this->set_adphone_cookie();
       }
       elseif(isset($_COOKIE['apn_ad_phone'])){
-        $phone = $_COOKIE['apn_ad_phone'];
+        $this->phone_number = $_COOKIE['apn_ad_phone'];
       }
      // elseif(get_post_meta($page_id, 'apn_landing_page', true) && (get_post_meta($page_id, 'apn_landing_page', true) == 1) && (get_post_meta($page_id, 'apn_ad_phone_number', true) != '')){
       //  $phone = get_post_meta($page_id, 'apn_ad_phone_number', true);
       //}
       else{
-        $phone = get_option('default_phone_number');
+        $this->phone_number = get_option('default_phone_number');
+      }
+    }
+
+    private function get_url_parameter(){
+      if(get_option('use_url_parameter') == 1){
+        $url_parameter = get_option('url_parameter');
+        $url_parameter_value_1 = get_option('url_parameter_value_1');
+        $url_parameter_value_2 = get_option('url_parameter_value_2');
+
+        if(isset($_GET[$url_parameter])){
+          if($_GET[$url_parameter] == $url_parameter_value_1){
+            return get_option('ad_phone_number_url_1');
+          }
+
+          if($_GET[$url_parameter] == $url_parameter_value_2){
+            return get_option('ad_phone_number_url_2');
+          }
+        }
+
+        return false;
       }
 
-      //return $phone;
-      $this->phone_number = $phone;
+      return false;
     }
 
     private function use_url_parameter(){
       if(get_option('use_url_parameter') == 1){
         $url_parameter = get_option('url_parameter');
-        $url_parameter_value = get_option('url_parameter_value');
-        if(isset($_GET[$url_parameter]) && $_GET[$url_parameter] == $url_parameter_value){
+        $url_parameter_value_1 = get_option('url_parameter_value_1');
+        $url_parameter_value_2 = get_option('url_parameter_value_2');
+        if(isset($_GET[$url_parameter]) && 
+            (($_GET[$url_parameter] == $url_parameter_value_1) || ($_GET[$url_parameter] == $url_parameter_value_2))){
           return true;
         }
       }
@@ -104,9 +137,9 @@ if(!class_exists('Ad_Phone_Number')){
        // $ad_phone = get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true);
 
         // 86400 = 1 day
-        //$num_days = get_option('cookie_lifespan');
+        $num_days = get_option('cookie_lifespan');
         if($this->use_url_parameter()){
-          setcookie('apn_ad_phone', $this->phone_number, time() + (86400 * 30), COOKIEPATH, COOKIE_DOMAIN);
+          setcookie('apn_ad_phone', $this->phone_number, time() + (86400 * (int)$num_days), COOKIEPATH, COOKIE_DOMAIN);
         }
       //}
     }
