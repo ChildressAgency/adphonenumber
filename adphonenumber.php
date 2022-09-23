@@ -1,8 +1,8 @@
 <?php
 /*
-  Plugin Name: Advertisement Phone Number
-  Description: Allows you to set a specific phone number for an advertisement landing page. The phone number will replace all default phone numbers that use the href="tel:" attribute for the rest of their visit and until cookie expires. The advertisement landing page requires using a page template called template-landingpage.php
-  Author: The Childress Agency
+  Plugin Name: Dynamic Phone Numbers
+  Description: Allows you to dynamically change displayed phone numbers to match phone numbers used in advertisements for better phone call conversion tracking.
+  Author: Childress Agency
   Author URI: https://childressagency.com
   Version: 2.0
   Text Domain: ad_phone_number
@@ -20,28 +20,28 @@ define('APN_PLUGIN_URL', plugin_dir_url(__FILE__));
 */
 require_once APN_PLUGIN_DIR . '/includes/class-apn_meta_box.php';
 require_once APN_PLUGIN_DIR . '/includes/class-apn_options_page.php';
+require_once APN_PLUGIN_DIR . '/includes/apn_custom_fields.php';
 
 if(!class_exists('Ad_Phone_Number')){
 
   class Ad_Phone_Number{
     private $phone_number;
+    private $use_acf = false;
+    private $acf_option = '';
 
     public function __construct(){
       add_action('init', array($this, 'load_textdomain'));
-      add_action('init', array($this, 'get_phone_number'));
+      add_action('init', array($this, 'set_phone_number'));
       add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
 
-      //$this->phone_number = $this->get_phone_number();
-
-      //if(!is_admin()){
-      //  add_action('wp', array($this, 'set_adphone_cookie'), 10);        
-      //}
+      add_action('plugins_loaded', array($this, 'check_acf_available'));
 
       if(is_admin()){
         add_action('load-post.php', array('APN_Meta_Box', 'init'));
         add_action('load-post-new.php', array('APN_Meta_Box', 'init'));
 
-        $apn_options_page = new APN_Options_Page();
+        add_action('plugins_loaded', array($this, 'load_apn_options_page'));
+        add_action('plugins_loaded', 'load_apn_acf_field_group');
       }
 
       add_shortcode('apn_phone_number_link', array($this, 'get_phone_number_link'));
@@ -71,77 +71,125 @@ if(!class_exists('Ad_Phone_Number')){
       );
     }
 
-    public function get_phone_number(){
-      //global $wp_query;
-      //$page_id = $wp_query->post->ID;
+    function load_apn_options_page(){
+      if(class_exists('acf')){
+        add_action('acf/init', array($this, 'add_acf_options_page'));
+      }
+      else{
+        $apn_options_page = new APN_Options_Page();
+      }
+    }
 
-      $url_parameter_phone = $this->get_url_parameter();
+    function check_acf_available(){
+      $this->use_acf = true;
+      $this->acf_option = 'options_';
+    }
 
-      //if($this->use_url_parameter()){
-      if($url_parameter_phone !== false){
-        //$phone = get_option('ad_phone_number_url');
-        $this->phone_number = $url_parameter_phone;
+    function add_acf_options_page(){
+      acf_add_options_page(array(
+        'page_title' => esc_html__('Dynamic Phone Number Settings', 'ad_phone_number'),
+        'menu_title' => esc_html__('Dynamic Phone Numbers', 'ad_phone_number'),
+        'menu_slug' => 'apn-settings',
+        'parent_slug' => '',
+        'capability' => 'manage_options',
+        'icon_url' => 'dashicons-phone'
+      ));
+    }
 
+    public function set_phone_number(){
+      $url_param_phone_number = $this->get_param_phone_number();
+
+      if($url_param_phone_number !== false){
+        $this->phone_number = $url_param_phone_number;
         $this->set_adphone_cookie();
       }
       elseif(isset($_COOKIE['apn_ad_phone'])){
         $this->phone_number = $_COOKIE['apn_ad_phone'];
       }
-     // elseif(get_post_meta($page_id, 'apn_landing_page', true) && (get_post_meta($page_id, 'apn_landing_page', true) == 1) && (get_post_meta($page_id, 'apn_ad_phone_number', true) != '')){
-      //  $phone = get_post_meta($page_id, 'apn_ad_phone_number', true);
-      //}
       else{
-        $this->phone_number = get_option('default_phone_number');
+        $this->phone_number = $this->apn_get_option('default_phone_number');
       }
     }
 
-    private function get_url_parameter(){
-      if(get_option('use_url_parameter') == 1){
-        $url_parameter = get_option('url_parameter');
-        $url_parameter_value_1 = get_option('url_parameter_value_1');
-        $url_parameter_value_2 = get_option('url_parameter_value_2');
+    public function get_param_phone_number(){
+      $phone_number = '';
 
-        if(isset($_GET[$url_parameter])){
-          if($_GET[$url_parameter] == $url_parameter_value_1){
-            return get_option('ad_phone_number_url_1');
+      if($this->use_url_parameter() == true){
+        $param_to_look_for = $this->get_param_to_look_for();
+
+        if(isset($_GET[$param_to_look_for])){
+          $possible_param_values = $this->get_possible_param_values();
+          $phone_number = '';
+
+          //foreach($possible_param_values as $i => $param_values){
+          //  foreach($param_values as $param_value){
+          //    if($_GET[$param_to_look_for] == $param_value['param_value']){
+          //      $phone_number = $param_value['phone_number'];
+          //    }
+          //  }
+          //}
+
+          foreach($possible_param_values as $param_value){
+            if($_GET[$param_to_look_for] == $param_value['param_value']){
+              $phone_number = $param_value['phone_number'];
+            }
           }
 
-          if($_GET[$url_parameter] == $url_parameter_value_2){
-            return get_option('ad_phone_number_url_2');
-          }
         }
 
-        return false;
       }
 
-      return false;
+      if($phone_number !== ''){
+        return $phone_number;
+      }
+      else{
+        return false;
+      }
+    }
+
+    private function get_possible_param_values(){
+      $possible_values = array();
+      if($this->acf_option == ''){
+        $possible_values[0]['param_value'] = $this->apn_get_option('url_parameter_value_1');
+        $possible_values[0]['phone_number'] = $this->apn_get_option('ad_phone_number_url_1');
+
+        $possible_values[1]['param_value'] = $this->apn_get_option('url_parameter_value_2');
+        $possible_values[1]['phone_number'] = $this->apn_get_option('ad_phone_number_url_2');
+      }
+      else{
+        $phone_numbers_count = $this->apn_get_option('phone_numbers');
+
+        for($i = 0; $i < $phone_numbers_count; $i++){
+          $possible_values[$i]['param_value'] = $this->apn_get_option('phone_numbers_' . $i . '_url_parameter_value');
+          $possible_values[$i]['phone_number'] = $this->apn_get_option('phone_numbers_' . $i . '_phone_number');
+        }
+      }
+
+      return $possible_values;
     }
 
     private function use_url_parameter(){
-      if(get_option('use_url_parameter') == 1){
-        $url_parameter = get_option('url_parameter');
-        $url_parameter_value_1 = get_option('url_parameter_value_1');
-        $url_parameter_value_2 = get_option('url_parameter_value_2');
-        if(isset($_GET[$url_parameter]) && 
-            (($_GET[$url_parameter] == $url_parameter_value_1) || ($_GET[$url_parameter] == $url_parameter_value_2))){
-          return true;
-        }
+      if($this->apn_get_option('use_url_parameter') == 1){
+        return true;
       }
 
       return false;
     }
 
-    public function set_adphone_cookie(){
-      //global $wp_query;
-      //if((get_post_meta($wp_query->post->ID, 'apn_landing_page', true) == 1) && (get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true) != '')){
-       // $ad_phone = get_post_meta($wp_query->post->ID, 'apn_ad_phone_number', true);
+    private function get_param_to_look_for(){
+      return $this->apn_get_option('url_parameter');
+    }
 
-        // 86400 = 1 day
-        $num_days = get_option('cookie_lifespan');
-        if($this->use_url_parameter()){
-          setcookie('apn_ad_phone', $this->phone_number, time() + (86400 * (int)$num_days), COOKIEPATH, COOKIE_DOMAIN);
-        }
-      //}
+    private function apn_get_option($option_name){
+      return get_option($this->acf_option . $option_name);
+    }
+
+    public function set_adphone_cookie(){
+      // 86400 = 1 day
+      $num_days = $this->apn_get_option('cookie_lifespan');
+      if($this->use_url_parameter()){
+        setcookie('apn_ad_phone', $this->phone_number, time() + (86400 * (int)$num_days), COOKIEPATH, COOKIE_DOMAIN);
+      }
     }
 
     public function get_phone_number_link($atts){
