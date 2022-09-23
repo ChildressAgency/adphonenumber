@@ -4,7 +4,7 @@
   Description: Allows you to dynamically change displayed phone numbers to match phone numbers used in advertisements for better phone call conversion tracking.
   Author: Childress Agency
   Author URI: https://childressagency.com
-  Version: 2.0
+  Version: 2.1
   Text Domain: ad_phone_number
 */
 
@@ -27,7 +27,6 @@ if(!class_exists('Ad_Phone_Number')){
   class Ad_Phone_Number{
     private $phone_number;
     private $use_acf = false;
-    private $acf_option = '';
 
     public function __construct(){
       add_action('init', array($this, 'load_textdomain'));
@@ -72,7 +71,7 @@ if(!class_exists('Ad_Phone_Number')){
     }
 
     function load_apn_options_page(){
-      if(class_exists('acf')){
+      if($this->use_acf == MYSQLI_DATA_TRUNCATED){
         add_action('acf/init', array($this, 'add_acf_options_page'));
       }
       else{
@@ -81,8 +80,9 @@ if(!class_exists('Ad_Phone_Number')){
     }
 
     function check_acf_available(){
-      $this->use_acf = true;
-      $this->acf_option = 'options_';
+      if(class_exists('acf')){
+        $this->use_acf = true;
+      }
     }
 
     function add_acf_options_page(){
@@ -149,7 +149,7 @@ if(!class_exists('Ad_Phone_Number')){
 
     private function get_possible_param_values(){
       $possible_values = array();
-      if($this->acf_option == ''){
+      if($this->use_acf == false){
         $possible_values[0]['param_value'] = $this->apn_get_option('url_parameter_value_1');
         $possible_values[0]['phone_number'] = $this->apn_get_option('ad_phone_number_url_1');
 
@@ -181,7 +181,10 @@ if(!class_exists('Ad_Phone_Number')){
     }
 
     private function apn_get_option($option_name){
-      return get_option($this->acf_option . $option_name);
+      $acf_option = '';
+      if($this->use_acf == true){ $acf_option = 'options_'; }
+
+      return get_option($acf_option . $option_name);
     }
 
     public function set_adphone_cookie(){
