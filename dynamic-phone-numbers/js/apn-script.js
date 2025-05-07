@@ -1,8 +1,9 @@
-jQuery(document).ready(function($){
-  if(adPhone.phone_number !== ''){
-    $('a[href^="tel:"]').each(function(){
-      if(!$(this).hasClass('emergency-phone')){
-        $(this).text(adPhone.phone_number).attr('href', 'tel:' + adPhone.phone_number);
+document.addEventListener('DOMContentLoaded', function() {
+  if (adPhone.phone_number !== '') {
+    document.querySelectorAll('a[href^="tel:"]').forEach(function(anchor) {
+      if (!anchor.classList.contains('emergency-phone')) {
+        anchor.textContent = adPhone.phone_number;
+        anchor.setAttribute('href', 'tel:' + adPhone.phone_number);
       }
     });
   }
